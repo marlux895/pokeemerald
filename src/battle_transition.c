@@ -779,7 +779,7 @@ static const TransitionStateFunc sTransitionIntroFuncs[] =
 
 static const struct SpriteFrameImage sSpriteImage_Pokeball[] =
 {
-    sPokeball_Gfx, sizeof(sPokeball_Gfx)
+    {sPokeball_Gfx, sizeof(sPokeball_Gfx)}
 };
 
 static const union AnimCmd sSpriteAnim_Pokeball[] =
@@ -841,12 +841,12 @@ static const struct OamData sOam_UnusedBrendanLass =
 
 static const struct SpriteFrameImage sImageTable_UnusedBrendan[] =
 {
-    sUnusedBrendan_Gfx, sizeof(sUnusedBrendan_Gfx)
+    {sUnusedBrendan_Gfx, sizeof(sUnusedBrendan_Gfx)}
 };
 
 static const struct SpriteFrameImage sImageTable_UnusedLass[] =
 {
-    sUnusedLass_Gfx, sizeof(sUnusedLass_Gfx)
+    {sUnusedLass_Gfx, sizeof(sUnusedLass_Gfx)}
 };
 
 static const union AnimCmd sSpriteAnim_UnusedBrendanLass[] =
@@ -1017,8 +1017,7 @@ static void CB2_TestBattleTransition(void)
     UpdatePaletteFade();
 }
 
-// Unused
-static void TestBattleTransition(u8 transitionId)
+static void UNUSED TestBattleTransition(u8 transitionId)
 {
     sTestingTransitionId = transitionId;
     SetMainCallback2(CB2_TestBattleTransition);
@@ -1908,7 +1907,11 @@ static bool8 ClockwiseWipe_TopRight(struct Task *task)
 {
     sTransitionData->VBlank_DMA = FALSE;
 
+#ifdef UBFIX
+    InitBlackWipe(sTransitionData->data, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, sTransitionData->tWipeEndX, 0, 1, 1);
+#else
     InitBlackWipe(sTransitionData->data, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, sTransitionData->tWipeEndX, -1, 1, 1);
+#endif
     do
     {
         gScanlineEffectRegBuffers[0][sTransitionData->tWipeCurrY] = (sTransitionData->tWipeCurrX + 1) | ((DISPLAY_WIDTH / 2) << 8);
