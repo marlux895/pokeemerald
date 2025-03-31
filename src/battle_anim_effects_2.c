@@ -2209,7 +2209,9 @@ static void AnimTask_Splash_Step(u8 taskId)
             task->data[4] -= 2;
         }
         else
+        {
             task->data[1]++;
+        }
         break;
     case 3:
         if (!RunAffineAnimFromTaskData(task))
@@ -2551,8 +2553,8 @@ static void AnimPencil_Step(struct Sprite *sprite)
 static void AnimBlendThinRing(struct Sprite *sprite)
 {
     u8 battler = 0;
-    u16 sp0 = 0;
-    u16 sp1 = 0;
+    s16 x = 0;
+    s16 y = 0;
     u8 r4;
 
     if (gBattleAnimArgs[2] == 0)
@@ -2563,16 +2565,16 @@ static void AnimBlendThinRing(struct Sprite *sprite)
     r4 = gBattleAnimArgs[3] ^ 1;
     if (IsDoubleBattle() && IsBattlerSpriteVisible(BATTLE_PARTNER(battler)))
     {
-        SetAverageBattlerPositions(battler, r4, &sp0, &sp1);
+        SetAverageBattlerPositions(battler, r4, &x, &y);
         if (r4 == 0)
             r4 = GetBattlerSpriteCoord(battler, BATTLER_COORD_X);
         else
             r4 = GetBattlerSpriteCoord(battler, BATTLER_COORD_X_2);
 
         if (GetBattlerSide(battler) != B_SIDE_PLAYER)
-            gBattleAnimArgs[0] -= (sp0 - r4) - gBattleAnimArgs[0];  // This is weird.
+            gBattleAnimArgs[0] -= (x - r4) - gBattleAnimArgs[0];  // This is weird.
         else
-            gBattleAnimArgs[0] = sp0 - r4;
+            gBattleAnimArgs[0] = x - r4;
     }
 
     sprite->callback = AnimSpriteOnMonPos;
@@ -2956,7 +2958,9 @@ static void AnimTask_SpeedDust_Step(u8 taskId)
                     task->data[8] = 1;
                 }
                 else
+                {
                     task->data[8] = 2;
+                }
             }
         }
         break;
@@ -3673,7 +3677,6 @@ static void AnimTask_UproarDistortion_Step(u8 taskId)
 
 static void AnimJaggedMusicNote(struct Sprite *sprite)
 {
-    int var1;
     u8 battler = !gBattleAnimArgs[0] ? gBattleAnimAttacker : gBattleAnimTarget;
 
     if (GetBattlerSide(battler) == B_SIDE_OPPONENT)
@@ -3684,16 +3687,8 @@ static void AnimJaggedMusicNote(struct Sprite *sprite)
     sprite->data[0] = 0;
     sprite->data[1] = (u16)sprite->x << 3;
     sprite->data[2] = (u16)sprite->y << 3;
-
-    var1 = gBattleAnimArgs[1] << 3;
-    if (var1 < 0)
-        var1 += 7;
-    sprite->data[3] = var1 >> 3;
-
-    var1 = gBattleAnimArgs[2] << 3;
-    if (var1 < 0)
-        var1 += 7;
-    sprite->data[4] = var1 >> 3;
+    sprite->data[3] = (gBattleAnimArgs[1] << 3) / 8;
+    sprite->data[4] = (gBattleAnimArgs[2] << 3) / 8;
 
     sprite->oam.tileNum += gBattleAnimArgs[3] * 16;
     sprite->callback = AnimJaggedMusicNote_Step;

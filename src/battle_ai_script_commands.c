@@ -478,9 +478,9 @@ static u8 ChooseMoveOrAction_Doubles(void)
         else
         {
             if (gBattleTypeFlags & BATTLE_TYPE_PALACE)
-                BattleAI_SetupAIData(gBattleStruct->palaceFlags >> 4);
+                BattleAI_SetupAIData(gBattleStruct->palaceFlags >> MAX_BATTLERS_COUNT);
             else
-                BattleAI_SetupAIData((1 << MAX_MON_MOVES) - 1);
+                BattleAI_SetupAIData(ALL_MOVES_MASK);
 
             gBattlerTarget = i;
 
@@ -1119,16 +1119,16 @@ static void Cmd_get_type(void)
     switch (typeVar)
     {
     case AI_TYPE1_USER: // AI user primary type
-        AI_THINKING_STRUCT->funcResult = gBattleMons[sBattler_AI].type1;
+        AI_THINKING_STRUCT->funcResult = gBattleMons[sBattler_AI].types[0];
         break;
     case AI_TYPE1_TARGET: // target primary type
-        AI_THINKING_STRUCT->funcResult = gBattleMons[gBattlerTarget].type1;
+        AI_THINKING_STRUCT->funcResult = gBattleMons[gBattlerTarget].types[0];
         break;
     case AI_TYPE2_USER: // AI user secondary type
-        AI_THINKING_STRUCT->funcResult = gBattleMons[sBattler_AI].type2;
+        AI_THINKING_STRUCT->funcResult = gBattleMons[sBattler_AI].types[1];
         break;
     case AI_TYPE2_TARGET: // target secondary type
-        AI_THINKING_STRUCT->funcResult = gBattleMons[gBattlerTarget].type2;
+        AI_THINKING_STRUCT->funcResult = gBattleMons[gBattlerTarget].types[1];
         break;
     case AI_TYPE_MOVE: // type of move being pointed to
         AI_THINKING_STRUCT->funcResult = gBattleMoves[AI_THINKING_STRUCT->moveConsidered].type;
@@ -1392,7 +1392,7 @@ static void Cmd_get_ability(void)
         }
         else
         {
-            AI_THINKING_STRUCT->funcResult = gSpeciesInfo[gBattleMons[battlerId].species].abilities[1]; // AI can't actually reach this part since no pokemon has ability 2 and no ability 1.
+            AI_THINKING_STRUCT->funcResult = gSpeciesInfo[gBattleMons[battlerId].species].abilities[1]; // AI can't actually reach this part since no Pokémon has ability 2 and no ability 1.
         }
     }
     else
@@ -1445,7 +1445,7 @@ static void Cmd_check_ability(void)
         }
         else
         {
-            ability = gSpeciesInfo[gBattleMons[battlerId].species].abilities[1]; // AI can't actually reach this part since no pokemon has ability 2 and no ability 1.
+            ability = gSpeciesInfo[gBattleMons[battlerId].species].abilities[1]; // AI can't actually reach this part since no Pokémon has ability 2 and no ability 1.
         }
     }
     else
@@ -1457,9 +1457,9 @@ static void Cmd_check_ability(void)
     if (ability == 0)
         AI_THINKING_STRUCT->funcResult = 2; // Unable to answer.
     else if (ability == gAIScriptPtr[2])
-        AI_THINKING_STRUCT->funcResult = 1; // Pokemon has the ability we wanted to check.
+        AI_THINKING_STRUCT->funcResult = 1; // Pokémon has the ability we wanted to check.
     else
-        AI_THINKING_STRUCT->funcResult = 0; // Pokemon doesn't have the ability we wanted to check.
+        AI_THINKING_STRUCT->funcResult = 0; // Pokémon doesn't have the ability we wanted to check.
 
     gAIScriptPtr += 3;
 }
@@ -1484,7 +1484,13 @@ static void Cmd_get_highest_type_effectiveness(void)
 
         if (gCurrentMove != MOVE_NONE)
         {
+            // TypeCalc does not assign to gMoveResultFlags, Cmd_typecalc does
+            // This makes the check for gMoveResultFlags below always fail
+#ifdef BUGFIX
+            gMoveResultFlags = TypeCalc(gCurrentMove, sBattler_AI, gBattlerTarget);
+#else
             TypeCalc(gCurrentMove, sBattler_AI, gBattlerTarget);
+#endif
 
             if (gBattleMoveDamage == 120) // Super effective STAB.
                 gBattleMoveDamage = AI_EFFECTIVENESS_x2;
@@ -1519,7 +1525,16 @@ static void Cmd_if_type_effectiveness(void)
     gBattleMoveDamage = AI_EFFECTIVENESS_x1;
     gCurrentMove = AI_THINKING_STRUCT->moveConsidered;
 
+    // TypeCalc does not assign to gMoveResultFlags, Cmd_typecalc does
+    // This makes the check for gMoveResultFlags below always fail
+    // This is how you get the "dual non-immunity" glitch, where AI
+    // will use ineffective moves on immune pokémon if the second type
+    // has a non-neutral, non-immune effectiveness
+#ifdef BUGFIX
+    gMoveResultFlags = TypeCalc(gCurrentMove, sBattler_AI, gBattlerTarget);
+#else
     TypeCalc(gCurrentMove, sBattler_AI, gBattlerTarget);
+#endif
 
     if (gBattleMoveDamage == 120) // Super effective STAB.
         gBattleMoveDamage = AI_EFFECTIVENESS_x2;
@@ -2252,7 +2267,7 @@ static void AIStackPushVar(const u8 *var)
     gBattleResources->AI_ScriptsStack->ptr[gBattleResources->AI_ScriptsStack->size++] = var;
 }
 
-static void AIStackPushVar_cursor(void)
+static void UNUSED AIStackPushVar_cursor(void)
 {
     gBattleResources->AI_ScriptsStack->ptr[gBattleResources->AI_ScriptsStack->size++] = gAIScriptPtr;
 }

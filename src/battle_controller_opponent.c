@@ -257,7 +257,9 @@ static void Intro_WaitForShinyAnimAndHealthbox(void)
                 FreeSpritePaletteByTag(ANIM_TAG_GOLD_STARS);
             }
             else
+            {
                 return;
+            }
         }
         else if (gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].finishedShinyMonAnim)
         {
@@ -270,13 +272,17 @@ static void Intro_WaitForShinyAnimAndHealthbox(void)
                     FreeSpritePaletteByTag(ANIM_TAG_GOLD_STARS);
                 }
                 else
+                {
                     return;
+                }
             }
-                gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].triedShinyMonAnim = FALSE;
-                gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].finishedShinyMonAnim = FALSE;
+            gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].triedShinyMonAnim = FALSE;
+            gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].finishedShinyMonAnim = FALSE;
         }
         else
+        {
             return;
+        }
 
         gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].introEndDelay = 3;
         gBattlerControllerFuncs[gActiveBattler] = Intro_DelayAndEnd;
@@ -331,7 +337,9 @@ static void Intro_TryShinyAnimShowHealthbox(void)
                     m4aMPlayContinue(&gMPlayInfo_BGM);
             }
             else
+            {
                 m4aMPlayVolumeControl(&gMPlayInfo_BGM, TRACKS_ALL, 0x100);
+            }
         }
         gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].bgmRestored = TRUE;
         bgmRestored = TRUE;
@@ -534,7 +542,7 @@ static void OpponentBufferExecCompleted(void)
 
 static void OpponentHandleGetMonData(void)
 {
-    u8 monData[sizeof(struct Pokemon) * 2 + 56]; // this allows to get full data of two pokemon, trying to get more will result in overwriting data
+    u8 monData[sizeof(struct Pokemon) * 2 + 56]; // this allows to get full data of two Pokémon, trying to get more will result in overwriting data
     u32 size = 0;
     u8 monToCheck;
     s32 i;
@@ -1555,7 +1563,7 @@ static void OpponentHandleChooseMove(void)
         if (gBattleTypeFlags & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_FIRST_BATTLE | BATTLE_TYPE_SAFARI | BATTLE_TYPE_ROAMER))
         {
 
-            BattleAI_SetupAIData(0xF);
+            BattleAI_SetupAIData(ALL_MOVES_MASK);
             chosenMoveId = BattleAI_ChooseMoveOrAction();
 
             switch (chosenMoveId)
@@ -1588,7 +1596,7 @@ static void OpponentHandleChooseMove(void)
             u16 move;
             do
             {
-                chosenMoveId = Random() & 3;
+                chosenMoveId = MOD(Random(), MAX_MON_MOVES);
                 move = moveInfo->moves[chosenMoveId];
             } while (move == MOVE_NONE);
 
@@ -2007,7 +2015,7 @@ static void OpponentHandleEndLinkBattle(void)
 {
     if (gBattleTypeFlags & BATTLE_TYPE_LINK && !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
     {
-        gMain.inBattle = 0;
+        gMain.inBattle = FALSE;
         gMain.callback1 = gPreBattleCallback1;
         SetMainCallback2(gMain.savedCallback);
     }

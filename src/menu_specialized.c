@@ -228,8 +228,7 @@ void MailboxMenu_RemoveWindow(u8 windowIdx)
     sMailboxWindowIds[windowIdx] = WINDOW_NONE;
 }
 
-// Unused
-static u8 MailboxMenu_GetWindowId(u8 windowIdx)
+static u8 UNUSED MailboxMenu_GetWindowId(u8 windowIdx)
 {
     return sMailboxWindowIds[windowIdx];
 }
@@ -310,7 +309,7 @@ void MailboxMenu_Free(void)
 // filled with the graph color.
 //---------------------------------------
 
-#define SHIFT_RIGHT_ADJUSTED(n, s)(((n) >> (s)) + (((n) >> ((s) - 1)) & 1))
+#define SHIFT_RIGHT_ADJUSTED(n, s) (((n) >> (s)) + (((n) >> ((s) - 1)) & 1))
 
 void ConditionGraph_Init(struct ConditionGraph *graph)
 {
